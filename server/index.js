@@ -14,11 +14,20 @@ import simulateTraffic from "./simulation/trafficSimulator.js";
 dotenv.config();
 connectDB();
 
+import http from "http";
+import { Server } from "socket.io";
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
-
-
 
 app.use("/api/auth", authRoutes);
 app.use("/api/traffic", trafficRoutes);
@@ -26,6 +35,8 @@ app.use("/api/incidents", incidentRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/bulletin", bulletinRoutes);
 
-setInterval(simulateTraffic, 5000);
+// Start traffic simulation with Socket.IO
+simulateTraffic(io);
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+const PORT = 5000;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useState, useRef, useEffect, useMemo } from "react";
 import {
   ArrowRight,
   ArrowLeft,
@@ -12,44 +12,24 @@ import {
 } from "lucide-react";
 import Topbar from "../components/Topbar";
 import Sidebar from "../components/Sidebar";
-import { MapContainer, TileLayer, Marker, Polyline, useMap, useMapEvents } from "react-leaflet";
+import Map, { Marker, Source, Layer, NavigationControl, GeolocateControl } from "react-map-gl";
+import mapboxgl from "mapbox-gl";
 import { LocationContext } from "../context/LocationContext";
 import { AuthContext } from "../context/AuthContext";
+import "mapbox-gl/dist/mapbox-gl.css";
 import "../styles/layout.css";
 
-/* ---------- MAP UPDATER COMPONENT ---------- */
-const MapUpdater = () => {
-  const { searchedLocation } = useContext(LocationContext);
-  const map = useMap();
-
-  useEffect(() => {
-    if (searchedLocation) {
-      map.flyTo([searchedLocation.lat, searchedLocation.lng], 14, {
-        animate: true,
-        duration: 1.5
-      });
-    }
-  }, [searchedLocation, map]);
-
-  return null;
-};
-
-/* ---------- MAP CLICK HANDLER ---------- */
-const MapClickHandler = ({ setStart, setEnd, start, end }) => {
-  useMapEvents({
-    click(e) {
-      if (!start) {
-        setStart({ lat: e.latlng.lat, lng: e.latlng.lng });
-      } else if (!end) {
-        setEnd({ lat: e.latlng.lat, lng: e.latlng.lng });
-      }
-    }
-  });
-  return null;
-};
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const RoutePlanner = () => {
   const { user } = useContext(AuthContext);
+  const { searchedLocation } = useContext(LocationContext);
+
+  const [viewState, setViewState] = useState({
+    latitude: 22.4969,
+    longitude: 88.3702,
+    zoom: 12
+  });
 
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
@@ -58,6 +38,17 @@ const RoutePlanner = () => {
   const [routeType, setRouteType] = useState(null);
   const [vehicleIndex, setVehicleIndex] = useState(0);
   const mapRef = useRef(null);
+
+  // Update map view when searchedLocation changes
+  useEffect(() => {
+    if (searchedLocation && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [searchedLocation.lng, searchedLocation.lat],
+        zoom: 14,
+        duration: 1500
+      });
+    }
+  }, [searchedLocation]);
 
   // FETCH ROUTES FROM OSRM
   const fetchRoutes = async (type) => {
@@ -91,7 +82,13 @@ const RoutePlanner = () => {
         }
 
         return {
-          coords: r.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
+          coords: r.geometry.coordinates.map(([lng, lat]) => [lat, lng]), // Store as [lat, lng] for compatibility with logic below, or better store as [lng, lat] for mapbox?
+          // The previous code stored as [lat, lng] but OSRM returns [lng, lat].
+          // Mapbox expects [lng, lat]. Let's store as [lng, lat] (GeoJSON standard).
+          // BUT: The animation logic and distance steps might rely on index.
+          // Let's stick to OSRM native [lng, lat] for simplicity in Mapbox Source.
+          geoJsonCoords: r.geometry.coordinates, // [lng, lat]
+
           distance: distanceKm.toFixed(2),
           duration: durationMin.toFixed(1),
           steps: r.legs[0].steps
@@ -100,6 +97,16 @@ const RoutePlanner = () => {
 
       setRoutes(processedRoutes);
       setSelectedRouteIndex(0);
+
+      // Fit bounds to show route
+      if (mapRef.current && processedRoutes[0].geoJsonCoords.length > 0) {
+        const bounds = new mapboxgl.LngLatBounds();
+        processedRoutes[0].geoJsonCoords.forEach(coord => {
+          bounds.extend(coord);
+        });
+        mapRef.current.fitBounds(bounds, { padding: 50 });
+      }
+
     } catch (error) {
       console.error(error);
       alert("Failed to fetch route");
@@ -114,13 +121,41 @@ const RoutePlanner = () => {
 
     const interval = setInterval(() => {
       setVehicleIndex((prev) => {
-        const max = routes[selectedRouteIndex].coords.length - 1;
+        const max = routes[selectedRouteIndex].geoJsonCoords.length - 1;
         return prev < max ? prev + 1 : prev;
       });
     }, 200);
 
     return () => clearInterval(interval);
   }, [routes, selectedRouteIndex]);
+
+  const handleMapClick = (e) => {
+    const { lng, lat } = e.lngLat;
+    if (!start) {
+      setStart({ lat, lng });
+    } else if (!end) {
+      setEnd({ lat, lng });
+    }
+  };
+
+  // Convert routes to GeoJSON lines for Mapbox
+  const routeLayers = useMemo(() => {
+    return routes.map((route, index) => ({
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: route.geoJsonCoords
+      },
+      properties: {
+        index,
+        isSelected: index === selectedRouteIndex
+      }
+    }));
+  }, [routes, selectedRouteIndex]);
+
+  const currentVehiclePos = routes.length > 0 && routes[selectedRouteIndex] && routes[selectedRouteIndex].geoJsonCoords[vehicleIndex]
+    ? { lng: routes[selectedRouteIndex].geoJsonCoords[vehicleIndex][0], lat: routes[selectedRouteIndex].geoJsonCoords[vehicleIndex][1] }
+    : null;
 
   return (
     <div className="app-layout">
@@ -132,37 +167,52 @@ const RoutePlanner = () => {
         <div className="page-body">
           {/* MAP SECTION */}
           <div className="dashboard-map-container">
-            <MapContainer
-              center={[22.4969, 88.3702]}
-              zoom={12}
-              style={{ height: "100vh", width: "100%" }}
+            <Map
+              {...viewState}
               ref={mapRef}
+              onMove={evt => setViewState(evt.viewState)}
+              style={{ width: "100%", height: "100vh" }}
+              mapStyle="mapbox://styles/mapbox/streets-v12"
+              mapboxAccessToken={MAPBOX_TOKEN}
+              onClick={handleMapClick}
             >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <MapUpdater />
-              <MapClickHandler setStart={setStart} setEnd={setEnd} start={start} end={end} />
-              {start && <Marker position={[start.lat, start.lng]} />}
-              {end && <Marker position={[end.lat, end.lng]} />}
-              {routes.length > 0 && (
-                <Polyline
-                  positions={routes[selectedRouteIndex].coords}
-                  color="#007bff"
-                  weight={5}
-                />
-              )}
-              {routes.length > 0 &&
-                routes[selectedRouteIndex] &&
-                routes[selectedRouteIndex].coords[vehicleIndex] && (
-                  <Marker
-                    position={routes[selectedRouteIndex].coords[vehicleIndex]}
-                    icon={L.icon({
-                      iconUrl: "https://cdn-icons-png.flaticon.com/512/3097/3097180.png",
-                      iconSize: [40, 40],
-                      iconAnchor: [20, 20]
-                    })}
+              <NavigationControl position="bottom-right" />
+              <GeolocateControl position="bottom-right" />
+
+              {/* Start/End Markers */}
+              {start && <Marker longitude={start.lng} latitude={start.lat} color="#10b981" anchor="bottom" />}
+              {end && <Marker longitude={end.lng} latitude={end.lat} color="#ef4444" anchor="bottom" />}
+
+              {/* Routes */}
+              {routeLayers.map((feature, i) => (
+                <Source key={i} id={`route-${i}`} type="geojson" data={feature}>
+                  <Layer
+                    id={`route-layer-${i}`}
+                    type="line"
+                    layout={{
+                      "line-join": "round",
+                      "line-cap": "round"
+                    }}
+                    paint={{
+                      "line-color": feature.properties.isSelected ? "#2563eb" : "#9ca3af",
+                      "line-width": feature.properties.isSelected ? 5 : 4,
+                      "line-opacity": feature.properties.isSelected ? 1 : 0.6
+                    }}
                   />
-                )}
-            </MapContainer>
+                </Source>
+              ))}
+
+              {/* Vehicle Marker */}
+              {currentVehiclePos && (
+                <Marker longitude={currentVehiclePos.lng} latitude={currentVehiclePos.lat} anchor="center">
+                  <img
+                    src="https://cdn-icons-png.flaticon.com/512/3097/3097180.png"
+                    alt="Car"
+                    style={{ width: "40px", height: "40px" }}
+                  />
+                </Marker>
+              )}
+            </Map>
           </div>
 
           {/* DETAILS SECTION */}

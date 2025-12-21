@@ -1,112 +1,110 @@
 [
   {
-    "id": "S1",
-    "name": "Tollygunge",
-    "lat": 22.4969,
-    "lng": 88.3702,
-    "vehicles": 83,
-    "congestion": "HIGH",
-    "aqi": 124,
-    "avgSpeed": 38,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
+    "id": "1",
+    "name": "Park Street Crossing",
+    "location": { "lat": 22.554450, "lng": 88.349850 },
+    "vehicles": 45,
+    "avgSpeed": 25,
+    "congestion": "MODERATE",
+    "aqi": 120
   },
   {
-    "id": "S2",
-    "name": "Garia",
-    "lat": 22.4582,
-    "lng": 88.3845,
-    "vehicles": 86,
-    "congestion": "HIGH",
-    "aqi": 130,
-    "avgSpeed": 48,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
-  },
-  {
-    "id": "S3",
-    "name": "Jadavpur",
-    "lat": 22.499,
-    "lng": 88.3715,
-    "vehicles": 37,
-    "congestion": "MEDIUM",
-    "aqi": 214,
-    "avgSpeed": 54,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
-  },
-  {
-    "id": "S4",
-    "name": "Ballygunge",
-    "lat": 22.5206,
-    "lng": 88.3639,
-    "vehicles": 83,
-    "congestion": "HIGH",
-    "aqi": 191,
-    "avgSpeed": 21,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
-  },
-  {
-    "id": "S5",
-    "name": "Park Circus",
-    "lat": 22.5412,
-    "lng": 88.3654,
-    "vehicles": 81,
-    "congestion": "HIGH",
-    "aqi": 183,
-    "avgSpeed": 49,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
-  },
-  {
-    "id": "S6",
-    "name": "Ruby",
-    "lat": 22.5131,
-    "lng": 88.401,
-    "vehicles": 79,
-    "congestion": "HIGH",
-    "aqi": 213,
-    "avgSpeed": 40,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
-  },
-  {
-    "id": "S7",
-    "name": "Kasba",
-    "lat": 22.5176,
-    "lng": 88.3843,
-    "vehicles": 11,
-    "congestion": "LOW",
-    "aqi": 123,
-    "avgSpeed": 40,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
-  },
-  {
-    "id": "S8",
-    "name": "Dhakuria",
-    "lat": 22.5081,
-    "lng": 88.3708,
-    "vehicles": 55,
-    "congestion": "MEDIUM",
-    "aqi": 108,
-    "avgSpeed": 49,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
-  },
-  {
-    "id": "S9",
-    "name": "Bansdroni",
-    "lat": 22.4643,
-    "lng": 88.37,
-    "vehicles": 35,
-    "congestion": "MEDIUM",
-    "aqi": 151,
-    "avgSpeed": 22,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
-  },
-  {
-    "id": "S10",
-    "name": "Santoshpur",
-    "lat": 22.4875,
-    "lng": 88.4019,
+    "id": "2",
+    "name": "Esplanade Junction",
+    "location": { "lat": 22.564600, "lng": 88.351000 },
     "vehicles": 85,
+    "avgSpeed": 12,
     "congestion": "HIGH",
-    "aqi": 193,
-    "avgSpeed": 57,
-    "lastUpdated": "2025-12-21T03:07:04.609Z"
+    "aqi": 150
+  },
+  {
+    "id": "3",
+    "name": "Gariahat More",
+    "location": { "lat": 22.519600, "lng": 88.365300 },
+    "vehicles": 60,
+    "avgSpeed": 18,
+    "congestion": "MODERATE",
+    "aqi": 110
+  },
+  {
+    "id": "4",
+    "name": "Ultadanga Crossing",
+    "location": { "lat": 22.594700, "lng": 88.385700 },
+    "vehicles": 95,
+    "avgSpeed": 10,
+    "congestion": "HIGH",
+    "aqi": 180
+  },
+  {
+    "id": "5",
+    "name": "Rajabazar Science College",
+    "location": { "lat": 22.579082, "lng": 88.372854 },
+    "vehicles": 70,
+    "avgSpeed": 15,
+    "congestion": "HIGH",
+    "aqi": 160
+  },
+  {
+    "id": "6",
+    "name": "Dunlop Crossing",
+    "location": { "lat": 22.652500, "lng": 88.377300 },
+    "vehicles": 55,
+    "avgSpeed": 30,
+    "congestion": "MODERATE",
+    "aqi": 105
+  },
+  {
+    "id": "7",
+    "name": "Shyambazar 5-Point",
+    "location": { "lat": 22.601400, "lng": 88.372400 },
+    "vehicles": 80,
+    "avgSpeed": 12,
+    "congestion": "HIGH",
+    "aqi": 145
+  },
+  {
+    "id": "8",
+    "name": "Science City",
+    "location": { "lat": 22.540100, "lng": 88.396100 },
+    "vehicles": 30,
+    "avgSpeed": 40,
+    "congestion": "LOW",
+    "aqi": 90
+  },
+  {
+    "id": "9",
+    "name": "Exide Crossing",
+    "location": { "lat": 22.541400, "lng": 88.347600 },
+    "vehicles": 50,
+    "avgSpeed": 22,
+    "congestion": "MODERATE",
+    "aqi": 125
+  },
+  {
+    "id": "10",
+    "name": "Jadavpur 8B",
+    "location": { "lat": 22.496500, "lng": 88.372300 },
+    "vehicles": 65,
+    "avgSpeed": 16,
+    "congestion": "HIGH",
+    "aqi": 130
+  },
+  {
+    "id": "11",
+    "name": "Ruby Crossing",
+    "location": { "lat": 22.513365, "lng": 88.402636 },
+    "vehicles": 75,
+    "avgSpeed": 28,
+    "congestion": "HIGH",
+    "aqi": 140
+  },
+  {
+    "id": "12",
+    "name": "Moulali Crossing",
+    "location": { "lat": 22.562900, "lng": 88.365300 },
+    "vehicles": 55,
+    "avgSpeed": 20,
+    "congestion": "MODERATE",
+    "aqi": 135
   }
 ]

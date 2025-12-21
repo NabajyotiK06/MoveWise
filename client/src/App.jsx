@@ -11,7 +11,7 @@ import BulletinBoard from "./pages/BulletinBoard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { LocationProvider } from "./context/LocationContext";
-import "./leafletFix";
+
 
 function App() {
   return (

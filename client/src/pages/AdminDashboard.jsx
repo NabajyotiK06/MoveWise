@@ -1,9 +1,10 @@
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, useRef } from "react";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import Map, { Marker, NavigationControl } from "react-map-gl";
 import { LocationContext } from "../context/LocationContext";
-import L from "leaflet";
+import { useSocket } from "../context/SocketContext";
+import "mapbox-gl/dist/mapbox-gl.css";
 import {
   CheckCircle,
   AlertTriangle,
@@ -12,66 +13,83 @@ import {
   Stethoscope,
   Search,
   List,
-  MapPin
+  MapPin,
+  Maximize2,
+  Clock
 } from "lucide-react";
 import "../styles/layout.css";
 
-/* ---------- MARKER ICONS ---------- */
-const redIcon = new L.Icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41]
-});
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
-const yellowIcon = new L.Icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41]
-});
+// Helper Component for Admin Signal Marker
+const AdminTrafficMarker = ({ signal, onClick }) => {
+  const { currentLight, timer } = signal;
+  const color = currentLight === "RED" ? "#ef4444" : currentLight === "YELLOW" ? "#eab308" : "#22c55e";
 
-const greenIcon = new L.Icon({
-  iconUrl:
-    "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41]
-});
-
-const getIconByStatus = (status) => {
-  if (status === "UNDER_INVESTIGATION") return yellowIcon;
-  if (status === "RESOLVED") return greenIcon;
-  return redIcon;
-};
-
-/* ---------- MAP UPDATER COMPONENT ---------- */
-const MapUpdater = () => {
-  const { searchedLocation } = useContext(LocationContext);
-  const map = useMap();
-
-  useEffect(() => {
-    if (searchedLocation) {
-      map.flyTo([searchedLocation.lat, searchedLocation.lng], 14, {
-        animate: true,
-        duration: 1.5
-      });
-    }
-  }, [searchedLocation, map]);
-
-  return null;
+  return (
+    <div onClick={onClick} style={{ cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{
+        background: "#1f2937", border: "2px solid white", borderRadius: "12px",
+        padding: "4px 8px", display: "flex", gap: "4px", boxShadow: "0 4px 6px rgba(0,0,0,0.3)"
+      }}>
+        <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: currentLight === "RED" ? "#ef4444" : "#374151" }} />
+        <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: currentLight === "YELLOW" ? "#eab308" : "#374151" }} />
+        <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: currentLight === "GREEN" ? "#22c55e" : "#374151" }} />
+      </div>
+      <div style={{ marginTop: "2px", background: color, color: "white", fontSize: "10px", fontWeight: "bold", padding: "1px 4px", borderRadius: "4px" }}>
+        {timer}s
+      </div>
+    </div>
+  );
 };
 
 const AdminDashboard = () => {
+  const socket = useSocket();
   const [incidents, setIncidents] = useState([]);
+  const [signals, setSignals] = useState([]); // Traffic Signals
   const [selectedIncident, setSelectedIncident] = useState(null);
+  const [selectedSignal, setSelectedSignal] = useState(null); // Selected Signal for Control
   const [activeTab, setActiveTab] = useState("LIVE");
   const [alertedDepartments, setAlertedDepartments] = useState([]);
+
+  const { searchedLocation } = useContext(LocationContext);
+  const mapRef = useRef(null);
+
+  // SOCKET: Listen for traffic updates
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("trafficUpdate", (data) => {
+      setSignals(data);
+      // Update selected signal if it exists
+      if (selectedSignal) {
+        const updated = data.find(s => s.id === selectedSignal.id);
+        if (updated) setSelectedSignal(updated);
+      }
+    });
+
+    return () => {
+      socket.off("trafficUpdate");
+    };
+  }, [socket, selectedSignal]);
+
+  // Handle Signal Override
+  const overrideSignal = (action, duration = 30) => {
+    if (!socket || !selectedSignal) return;
+    socket.emit("adminSignalUpdate", { id: selectedSignal.id, action, duration });
+    // Optimistic update handled by incoming socket event
+  };
+
+  // Fly to searched location
+  useEffect(() => {
+    if (searchedLocation && mapRef.current) {
+      mapRef.current.flyTo({
+        center: [searchedLocation.lng, searchedLocation.lat],
+        zoom: 14,
+        duration: 1500
+      });
+    }
+  }, [searchedLocation]);
 
   // Fetch incidents
   const fetchIncidents = async () => {
@@ -88,7 +106,6 @@ const AdminDashboard = () => {
     fetchIncidents();
   }, []);
 
-  // 🔁 Reset department locks when new incident selected
   // 🔁 Reset department locks when new incident selected
   useEffect(() => {
     if (selectedIncident) {
@@ -186,25 +203,63 @@ const AdminDashboard = () => {
           {/* Map */}
           <div className="dashboard-map-container">
             {activeTab === "LIVE" ? (
-              <MapContainer
-                center={[22.4969, 88.3702]}
-                zoom={12}
-                style={{ height: "100%", width: "100%" }}
+              <Map
+                initialViewState={{
+                  latitude: 22.4969,
+                  longitude: 88.3702,
+                  zoom: 12
+                }}
+                ref={mapRef}
+                style={{ width: "100%", height: "100%" }}
+                mapStyle="mapbox://styles/mapbox/streets-v12"
+                mapboxAccessToken={MAPBOX_TOKEN}
+                onClick={() => {
+                  setSelectedIncident(null);
+                  setSelectedSignal(null);
+                }}
               >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <MapUpdater />
+                <NavigationControl position="bottom-right" />
 
+                {/* Signals Markers */}
+                {signals.map((s) => (
+                  <Marker
+                    key={s.id}
+                    longitude={s.lng}
+                    latitude={s.lat}
+                    anchor="center"
+                  >
+                    <AdminTrafficMarker
+                      signal={s}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSignal(s);
+                        setSelectedIncident(null);
+                        setActiveTab("LIVE");
+                      }}
+                    />
+                  </Marker>
+                ))}
+
+                {/* Incident Markers */}
                 {liveIncidents.map((inc) => (
                   <Marker
                     key={inc._id}
-                    position={[inc.lat, inc.lng]}
-                    icon={getIconByStatus(inc.status)}
-                    eventHandlers={{
-                      click: () => setSelectedIncident(inc)
+                    longitude={inc.lng}
+                    latitude={inc.lat}
+                    anchor="bottom"
+                    onClick={(e) => {
+                      e.originalEvent.stopPropagation();
+                      setSelectedIncident(inc);
+                      setSelectedSignal(null);
                     }}
-                  />
+                  >
+                    <div style={{ cursor: "pointer", fontSize: "28px", filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))" }}>
+                      {/* Use simple emoji markers or custom divs based on status */}
+                      {inc.status === "UNDER_INVESTIGATION" ? "🟡" : "🔴"}
+                    </div>
+                  </Marker>
                 ))}
-              </MapContainer>
+              </Map>
             ) : (
               <div style={{ padding: "24px", overflowY: "auto", height: "100%" }}>
                 <h2 className="section-title">Resolved History</h2>
@@ -259,12 +314,73 @@ const AdminDashboard = () => {
               </div>
 
               <div className="panel-container">
-                {!selectedIncident || activeTab === "HISTORY" ? (
-                  <div style={{ textAlign: "center", padding: "40px 20px", color: "#9ca3af" }}>
-                    <Search size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
-                    <p>Select an incident on the map to view details and take action.</p>
+                {/* SIGNAL CONTROL PANEL */}
+                {selectedSignal && (
+                  <div className="fade-in">
+                    <div style={{ paddingBottom: "16px", borderBottom: "1px solid #e5e7eb", marginBottom: "16px" }}>
+                      <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", margin: 0 }}>🚦 {selectedSignal.name}</h2>
+                      <p style={{ color: "#6b7280", margin: "4px 0 0 0" }}>Control Traffic Flow</p>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
+                      <div style={{ background: "#f3f4f6", padding: "10px", borderRadius: "8px", textAlign: "center" }}>
+                        <span style={{ fontSize: "12px", color: "#6b7280" }}>Current Phase</span>
+                        <div style={{ fontWeight: "bold", color: selectedSignal.currentLight === "RED" ? "#ef4444" : selectedSignal.currentLight === "GREEN" ? "#22c55e" : "#eab308" }}>
+                          {selectedSignal.currentLight} ({selectedSignal.timer}s)
+                        </div>
+                      </div>
+                      <div style={{ background: "#f3f4f6", padding: "10px", borderRadius: "8px", textAlign: "center" }}>
+                        <span style={{ fontSize: "12px", color: "#6b7280" }}>Congestion</span>
+                        <div style={{ fontWeight: "bold", color: selectedSignal.congestion === "HIGH" ? "#ef4444" : "#22c55e" }}>
+                          {selectedSignal.congestion}
+                        </div>
+                      </div>
+                    </div>
+
+                    <h4 style={{ fontSize: "0.875rem", fontWeight: "600", marginBottom: "10px" }}>Manual Override</h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <button
+                        onClick={() => overrideSignal("forceGreen", 45)}
+                        className="btn"
+                        style={{ background: "#dcfce7", color: "#166534", border: "1px solid #22c55e", justifyContent: "center" }}
+                      >
+                        Force GREEN (45s)
+                      </button>
+                      <button
+                        onClick={() => overrideSignal("forceYellow", 5)}
+                        className="btn"
+                        style={{ background: "#fef9c3", color: "#854d0e", border: "1px solid #ca8a04", justifyContent: "center" }}
+                      >
+                        Force YELLOW (5s)
+                      </button>
+                      <button
+                        onClick={() => overrideSignal("forceRed", 45)}
+                        className="btn"
+                        style={{ background: "#fee2e2", color: "#991b1b", border: "1px solid #ef4444", justifyContent: "center" }}
+                      >
+                        Force RED (45s)
+                      </button>
+                      <button
+                        onClick={() => overrideSignal("forceGreen", 10)}
+                        className="btn"
+                        style={{ background: "#fff", border: "1px solid #d1d5db", color: "#374151", justifyContent: "center", marginTop: "10px" }}
+                      >
+                        Short Green (10s)
+                      </button>
+                    </div>
+
+                    <div style={{ marginTop: "20px", padding: "12px", background: "#fffbeb", borderRadius: "8px", border: "1px solid #fcd34d", display: "flex", alignItems: "start", gap: "8px" }}>
+                      <AlertTriangle size={16} color="#d97706" style={{ marginTop: "3px" }} />
+                      <div style={{ fontSize: "12px", color: "#b45309" }}>
+                        Overrides apply immediately to all users. System will resume automatic scheduling after the forced phase ends.
+                      </div>
+                    </div>
                   </div>
-                ) : (
+                )}
+
+
+                {/* INCIDENT DETAILS PANEL */}
+                {!selectedSignal && selectedIncident && activeTab !== "HISTORY" && (
                   <div className="fade-in">
                     <div style={{ marginBottom: "24px" }}>
                       <div style={{
@@ -403,6 +519,16 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 )}
+
+                {/* EMPTY STATE */}
+                {!selectedIncident && !selectedSignal && activeTab !== "HISTORY" && (
+                  <div style={{ textAlign: "center", padding: "40px 20px", color: "#9ca3af" }}>
+                    <Search size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
+                    <p>Select a signal or incident on the map.</p>
+                  </div>
+                )}
+
+
               </div>
             </div>
           </div>

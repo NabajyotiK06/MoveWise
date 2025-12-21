@@ -1,25 +1,8 @@
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Polyline,
-  useMapEvents
-} from "react-leaflet";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import Map, { Marker, Source, Layer, NavigationControl } from "react-map-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 
-/* Handles map click to select start & end */
-const ClickHandler = ({ start, end, setStart, setEnd }) => {
-  useMapEvents({
-    click(e) {
-      if (!start) {
-        setStart(e.latlng);
-      } else if (!end) {
-        setEnd(e.latlng);
-      }
-    }
-  });
-  return null;
-};
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const RouteMap = ({
   start,
@@ -33,7 +16,7 @@ const RouteMap = ({
 
   /* Animate vehicle along selected route */
   useEffect(() => {
-    if (!routes.length) return;
+    if (!routes || !routes.length) return;
 
     setVehicleIndex(0);
 
@@ -47,59 +30,79 @@ const RouteMap = ({
     return () => clearInterval(interval);
   }, [routes, selectedRouteIndex]);
 
+  const handleMapClick = (e) => {
+    if (!start) {
+      setStart(e.lngLat);
+    } else if (!end) {
+      setEnd(e.lngLat);
+    }
+  };
+
+  // Convert routes to GeoJSON lines
+  const routeLayers = useMemo(() => {
+    return routes.map((route, index) => ({
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: route.coords.map(([lat, lng]) => [lng, lat]) // Validate if coords are [lat, lng] or [lng, lat]. stored as [lat, lng] in previous code?
+        // In previous RoutePlanner code: 
+        // coords: r.geometry.coordinates.map(([lng, lat]) => [lat, lng]) -> So stored as [lat, lng]
+        // Mapbox needs [lng, lat]
+      },
+      properties: {
+        index,
+        isSelected: index === selectedRouteIndex
+      }
+    }));
+  }, [routes, selectedRouteIndex]);
+
+  const vehiclePosition = routes.length > 0 && routes[selectedRouteIndex] && routes[selectedRouteIndex].coords[vehicleIndex]
+    ? { lng: routes[selectedRouteIndex].coords[vehicleIndex][1], lat: routes[selectedRouteIndex].coords[vehicleIndex][0] }
+    : null;
+
   return (
-    <MapContainer
-      center={[22.4969, 88.3702]}
-      zoom={12}
-      style={{ height: "100%", width: "100%" }}
+    <Map
+      initialViewState={{
+        latitude: 22.4969,
+        longitude: 88.3702,
+        zoom: 12
+      }}
+      style={{ width: "100%", height: "100%" }}
+      mapStyle="mapbox://styles/mapbox/streets-v12"
+      mapboxAccessToken={MAPBOX_TOKEN}
+      onClick={handleMapClick}
     >
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <NavigationControl position="bottom-right" />
 
-      <ClickHandler
-        start={start}
-        end={end}
-        setStart={setStart}
-        setEnd={setEnd}
-      />
+      {start && <Marker longitude={start.lng} latitude={start.lat} color="green" />}
+      {end && <Marker longitude={end.lng} latitude={end.lat} color="red" />}
 
-      {start && <Marker position={start} />}
-      {end && <Marker position={end} />}
-
-      {/* Draw all routes */}
-      {/* Draw non-selected routes first (background) */}
-      {routes.map((route, index) => {
-        if (index === selectedRouteIndex) return null;
-        return (
-          <Polyline
-            key={index}
-            positions={route.coords}
-            color="#9ca3af" // Gray 400
-            weight={4}
-            opacity={0.6}
+      {/* Render Routes */}
+      {routeLayers.map((feature, i) => (
+        <Source key={i} id={`route-${i}`} type="geojson" data={feature}>
+          <Layer
+            id={`route-layer-${i}`}
+            type="line"
+            layout={{
+              "line-join": "round",
+              "line-cap": "round"
+            }}
+            paint={{
+              "line-color": feature.properties.isSelected ? "#2563eb" : "#9ca3af",
+              "line-width": feature.properties.isSelected ? 6 : 4,
+              "line-opacity": feature.properties.isSelected ? 1 : 0.6
+            }}
           />
-        );
-      })}
+        </Source>
+      ))}
 
-      {/* Draw selected route last (foreground) */}
-      {routes[selectedRouteIndex] && (
-        <Polyline
-          key={selectedRouteIndex}
-          positions={routes[selectedRouteIndex].coords}
-          color="#2563eb" // Primary Blue
-          weight={6}
-          opacity={1}
-        />
+      {/* Vehicle Marker */}
+      {vehiclePosition && (
+        <Marker longitude={vehiclePosition.lng} latitude={vehiclePosition.lat}>
+          <div style={{ fontSize: "24px" }}>🚗</div>
+        </Marker>
       )}
-
-      {/* Animated vehicle marker */}
-      {routes.length > 0 &&
-        routes[selectedRouteIndex] &&
-        routes[selectedRouteIndex].coords[vehicleIndex] && (
-          <Marker
-            position={routes[selectedRouteIndex].coords[vehicleIndex]}
-          />
-        )}
-    </MapContainer>
+    </Map>
   );
 };
 

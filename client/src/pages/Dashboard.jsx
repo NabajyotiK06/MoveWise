@@ -75,13 +75,60 @@ const Dashboard = () => {
                     height: "300px", display: "flex", flexDirection: "column",
                     alignItems: "center", justifyContent: "center", background: "#000", color: "#4b5563"
                   }}>
-                    <VideoOff size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
-                    <p style={{ color: "#9ca3af", fontSize: "1rem" }}>Signal Feed Offline</p>
-                    <div style={{
-                      marginTop: "12px", padding: "4px 10px", background: "#f59e0b", color: "#fff",
-                      borderRadius: "4px", fontSize: "11px", fontWeight: "bold", textTransform: "uppercase"
-                    }}>
-                      Under Development
+                    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+                      {/* Simulated Camera View Background */}
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          background: "radial-gradient(circle, #333 0%, #000 100%)",
+                          opacity: 0.8
+                        }}
+                      />
+
+                      {/* Camera Overlay Info */}
+                      <div style={{ position: "absolute", top: "10px", left: "10px", right: "10px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div style={{ padding: "4px 8px", background: "rgba(0,0,0,0.7)", color: "#00ff00", borderRadius: "4px", fontSize: "12px", fontFamily: "monospace", display: "flex", gap: "8px" }}>
+                          <span>REC ●</span>
+                          <span>CAM-{selectedSignal.id}</span>
+                          <span>{new Date().toLocaleTimeString()}</span>
+                        </div>
+                        <div style={{ padding: "4px 8px", background: selectedSignal.congestion === "HIGH" ? "rgba(239, 68, 68, 0.8)" : "rgba(16, 185, 129, 0.8)", color: "#fff", borderRadius: "4px", fontSize: "12px", fontWeight: "bold" }}>
+                          {selectedSignal.congestion} TRAFFIC
+                        </div>
+                      </div>
+
+                      {/* Analysis Overlay */}
+                      <div style={{ position: "absolute", bottom: "10px", left: "10px", right: "10px", background: "rgba(0,0,0,0.8)", padding: "10px", borderRadius: "8px", backdropFilter: "blur(4px)" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", fontFamily: "monospace" }}>
+                          <div style={{ color: "#fff" }}>
+                            <div style={{ fontSize: "10px", color: "#9ca3af" }}>VEHICLES DETECTED</div>
+                            <div style={{ fontSize: "16px", color: "#60a5fa" }}>{selectedSignal.vehicles}</div>
+                          </div>
+                          <div style={{ color: "#fff" }}>
+                            <div style={{ fontSize: "10px", color: "#9ca3af" }}>AVG SPEED</div>
+                            <div style={{ fontSize: "16px", color: "#fbbf24" }}>{selectedSignal.avgSpeed} km/h</div>
+                          </div>
+                          <div style={{ color: "#fff" }}>
+                            <div style={{ fontSize: "10px", color: "#9ca3af" }}>AQI LEVEL</div>
+                            <div style={{ fontSize: "16px", color: "#c084fc" }}>{selectedSignal.aqi}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Scanning Effect Line */}
+                      <div className="scan-line" style={{
+                        position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "rgba(0, 255, 0, 0.5)",
+                        boxShadow: "0 0 10px rgba(0,255,0,0.8)", animation: "scan 3s linear infinite"
+                      }}></div>
+                      <style>{`
+                        @keyframes scan {
+                          0% { top: 0%; opacity: 0; }
+                          10% { opacity: 1; }
+                          90% { opacity: 1; }
+                          100% { top: 100%; opacity: 0; }
+                        }
+                      `}</style>
                     </div>
                   </div>
                 </div>

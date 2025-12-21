@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import SignalGraph from "./SignalGraph";
 import EnvironmentGraph from "./EnvironmentGraph";
 import SpeedGraph from "./SpeedGraph";
-import { Activity, Wind, Gauge, Car, Video, VideoOff } from "lucide-react";
+import { Activity, Wind, Gauge, Car, Video, VideoOff, AlertTriangle } from "lucide-react";
+import { AuthContext } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 
 const SignalInfoPanel = ({ signal, onViewFeed }) => {
   const [history, setHistory] = useState([]);
+  const { user } = useContext(AuthContext);
+  const socket = useSocket();
 
   useEffect(() => {
     if (!signal) return;
@@ -20,6 +24,11 @@ const SignalInfoPanel = ({ signal, onViewFeed }) => {
       }
     ]);
   }, [signal?.vehicles]);
+
+  const overrideSignal = (action, duration = 30) => {
+    if (!socket || !signal) return;
+    socket.emit("adminSignalUpdate", { id: signal.id, action, duration });
+  };
 
   if (!signal) {
     return (
@@ -70,6 +79,42 @@ const SignalInfoPanel = ({ signal, onViewFeed }) => {
         <InfoItem icon={Gauge} label="Avg Speed" value={`${signal.avgSpeed} km/h`} color="#f59e0b" />
       </div>
 
+      {user?.role === "admin" && (
+        <div style={{ marginBottom: "24px", padding: "16px", background: "#fefff5", border: "1px solid #fde68a", borderRadius: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+            <AlertTriangle size={18} color="#d97706" />
+            <h4 style={{ margin: 0, fontSize: "14px", color: "#b45309", fontWeight: "700" }}>Admin Override</h4>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
+            <button
+              onClick={() => overrideSignal("forceGreen", 45)}
+              className="btn"
+              style={{ background: "#dcfce7", color: "#166534", border: "1px solid #22c55e", justifyContent: "center", fontSize: "12px", padding: "8px 4px" }}
+            >
+              Force GREEN
+            </button>
+            <button
+              onClick={() => overrideSignal("forceYellow", 5)}
+              className="btn"
+              style={{ background: "#fef9c3", color: "#854d0e", border: "1px solid #ca8a04", justifyContent: "center", fontSize: "12px", padding: "8px 4px" }}
+            >
+              Force YELLOW
+            </button>
+            <button
+              onClick={() => overrideSignal("forceRed", 45)}
+              className="btn"
+              style={{ background: "#fee2e2", color: "#991b1b", border: "1px solid #ef4444", justifyContent: "center", fontSize: "12px", padding: "8px 4px" }}
+            >
+              Force RED
+            </button>
+          </div>
+          <p style={{ fontSize: "11px", color: "#92400e", marginTop: "8px", lineHeight: "1.4" }}>
+            Actions apply immediately to all users. System resumes afterward.
+          </p>
+        </div>
+      )}
+
       <h4 className="section-title">Traffic Volume</h4>
       <div className="card" style={{ padding: "16px", border: "1px solid #e5e7eb", boxShadow: "none", marginBottom: "16px" }}>
         <SignalGraph history={history} />
@@ -96,5 +141,4 @@ const SignalInfoPanel = ({ signal, onViewFeed }) => {
     </div>
   );
 };
-
 export default SignalInfoPanel;
