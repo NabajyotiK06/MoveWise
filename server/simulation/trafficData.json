@@ -1,0 +1,112 @@
+[
+  {
+    "id": "S1",
+    "name": "Tollygunge",
+    "lat": 22.4969,
+    "lng": 88.3702,
+    "vehicles": 83,
+    "congestion": "HIGH",
+    "aqi": 124,
+    "avgSpeed": 38,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S2",
+    "name": "Garia",
+    "lat": 22.4582,
+    "lng": 88.3845,
+    "vehicles": 86,
+    "congestion": "HIGH",
+    "aqi": 130,
+    "avgSpeed": 48,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S3",
+    "name": "Jadavpur",
+    "lat": 22.499,
+    "lng": 88.3715,
+    "vehicles": 37,
+    "congestion": "MEDIUM",
+    "aqi": 214,
+    "avgSpeed": 54,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S4",
+    "name": "Ballygunge",
+    "lat": 22.5206,
+    "lng": 88.3639,
+    "vehicles": 83,
+    "congestion": "HIGH",
+    "aqi": 191,
+    "avgSpeed": 21,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S5",
+    "name": "Park Circus",
+    "lat": 22.5412,
+    "lng": 88.3654,
+    "vehicles": 81,
+    "congestion": "HIGH",
+    "aqi": 183,
+    "avgSpeed": 49,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S6",
+    "name": "Ruby",
+    "lat": 22.5131,
+    "lng": 88.401,
+    "vehicles": 79,
+    "congestion": "HIGH",
+    "aqi": 213,
+    "avgSpeed": 40,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S7",
+    "name": "Kasba",
+    "lat": 22.5176,
+    "lng": 88.3843,
+    "vehicles": 11,
+    "congestion": "LOW",
+    "aqi": 123,
+    "avgSpeed": 40,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S8",
+    "name": "Dhakuria",
+    "lat": 22.5081,
+    "lng": 88.3708,
+    "vehicles": 55,
+    "congestion": "MEDIUM",
+    "aqi": 108,
+    "avgSpeed": 49,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S9",
+    "name": "Bansdroni",
+    "lat": 22.4643,
+    "lng": 88.37,
+    "vehicles": 35,
+    "congestion": "MEDIUM",
+    "aqi": 151,
+    "avgSpeed": 22,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  },
+  {
+    "id": "S10",
+    "name": "Santoshpur",
+    "lat": 22.4875,
+    "lng": 88.4019,
+    "vehicles": 85,
+    "congestion": "HIGH",
+    "aqi": 193,
+    "avgSpeed": 57,
+    "lastUpdated": "2025-12-21T03:07:04.609Z"
+  }
+]

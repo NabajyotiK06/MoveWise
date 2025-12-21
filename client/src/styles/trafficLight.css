@@ -1,0 +1,25 @@
+.traffic-light {
+  font-size: 20px;
+  animation: pulse 1.5s infinite;
+}
+
+.green {
+  color: #22c55e;
+  text-shadow: 0 0 8px #22c55e;
+}
+
+.yellow {
+  color: #eab308;
+  text-shadow: 0 0 8px #eab308;
+}
+
+.red {
+  color: #ef4444;
+  text-shadow: 0 0 8px #ef4444;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}

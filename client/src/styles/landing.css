@@ -1,0 +1,309 @@
+/* Color Palette - Toned Down / Modern Professional */
+:root {
+    --lp-bg: #f8fafc;
+    /* Slate 50 */
+    --lp-surface: #ffffff;
+    --lp-text-main: #334155;
+    /* Slate 700 */
+    --lp-text-head: #0f172a;
+    /* Slate 900 */
+    --lp-text-muted: #64748b;
+    /* Slate 500 */
+
+    --lp-primary: #0f766e;
+    /* Teal 700 */
+    --lp-primary-hover: #115e59;
+    /* Teal 800 */
+
+    --lp-secondary: #e2e8f0;
+    /* Slate 200 */
+
+    --lp-nav-height: 70px;
+}
+
+body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+.lp-container {
+    background-color: var(--lp-bg);
+    color: var(--lp-text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* NAVBAR */
+.lp-navbar {
+    height: var(--lp-nav-height);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.lp-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--lp-text-head);
+    text-decoration: none;
+}
+
+.lp-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--lp-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.lp-nav-links {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.lp-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+}
+
+.lp-btn-ghost {
+    color: var(--lp-text-main);
+    background: transparent;
+}
+
+.lp-btn-ghost:hover {
+    color: var(--lp-text-head);
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.lp-btn-primary {
+    background-color: var(--lp-primary);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(15, 118, 110, 0.2);
+}
+
+.lp-btn-primary:hover {
+    background-color: var(--lp-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(15, 118, 110, 0.3);
+}
+
+/* HERO SECTION */
+.lp-hero {
+    padding: 160px 20px 140px;
+    text-align: center;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    position: relative;
+    /* Dark overlay for better text contrast against the city image */
+    background-color: #0f172a;
+    color: white;
+}
+
+/* Encapsulate max-width content inside hero if needed, but for now we centered text */
+
+
+.lp-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 30px;
+    background: rgba(15, 118, 110, 0.2);
+    /* Teal transparent */
+    backdrop-filter: blur(4px);
+    color: #5eead4;
+    /* Brighter teal for dark bg */
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+    border: 1px solid rgba(45, 212, 191, 0.3);
+}
+
+.lp-title {
+    font-size: 3.5rem;
+    line-height: 1.1;
+    font-weight: 800;
+    color: #ffffff;
+    /* White text for dark bg */
+    margin: 0 0 24px 0;
+    letter-spacing: -0.03em;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    /* Add drop shadow for readability */
+}
+
+.lp-title span {
+    background: linear-gradient(135deg, #2dd4bf 30%, #38bdf8);
+    /* Brighter gradient */
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.lp-subtitle {
+    font-size: 1.25rem;
+    color: #cbd5e1;
+    /* Slate 300 for readability on dark */
+    line-height: 1.6;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.lp-cta-group {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.lp-cta-lg {
+    padding: 14px 32px;
+    font-size: 1.05rem;
+}
+
+/* Specific override for Ghost button in Dark Hero */
+.lp-hero .lp-btn-ghost {
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(4px);
+}
+
+.lp-hero .lp-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: white;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.lp-illustration {
+    margin-top: 60px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: white;
+    max-width: 1000px;
+    margin: 60px auto 0;
+}
+
+/* FEATURES SECTION */
+.lp-features-section {
+    padding: 100px 20px;
+    background: white;
+}
+
+/* Ensure subtitle is visible on white background */
+.lp-features-section .lp-subtitle {
+    color: #475569;
+    /* Slate 600 */
+}
+
+.lp-section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.lp-section-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--lp-text-head);
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+}
+
+.lp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.lp-feat-card {
+    padding: 32px;
+    border-radius: 16px;
+    background: var(--lp-bg);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.lp-feat-card:hover {
+    transform: translateY(-5px);
+    background: white;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08);
+    border-color: var(--lp-secondary);
+}
+
+.lp-feat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    color: var(--lp-primary);
+}
+
+.lp-feat-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--lp-text-head);
+    margin-bottom: 10px;
+}
+
+.lp-feat-desc {
+    color: var(--lp-text-muted);
+    line-height: 1.6;
+}
+
+/* FOOTER */
+.lp-footer {
+    padding: 40px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--lp-text-muted);
+    border-top: 1px solid var(--lp-secondary);
+    background: white;
+}
+
+@media (max-width: 768px) {
+    .lp-title {
+        font-size: 2.5rem;
+    }
+
+    .lp-hero {
+        padding-top: 120px;
+    }
+}
