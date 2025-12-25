@@ -11,7 +11,8 @@ const Signup = () => {
     name: "",
     email: "",
     password: "",
-    role: "user"
+    role: "user",
+    adminSecretKey: ""
   });
   const [showPassword, setShowPassword] = useState(false);
 
@@ -112,6 +113,21 @@ const Signup = () => {
               <option value="admin">Administrator</option>
             </select>
           </div>
+
+          {form.role === "admin" && (
+            <div className="fade-in">
+              <label style={{ display: "block", marginBottom: "6px", fontWeight: "600", color: "#374151" }}>
+                Admin Secret Key
+              </label>
+              <input
+                type="password"
+                name="adminSecretKey"
+                placeholder="Enter admin secret key"
+                onChange={handleChange}
+                className="input-field"
+              />
+            </div>
+          )}
 
           <button onClick={handleSignup} className="btn btn-primary" style={{ marginTop: "16px", padding: "12px" }}>
             Sign Up

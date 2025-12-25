@@ -83,9 +83,9 @@ const simulateTraffic = (io) => {
       let avgSpeed = Math.max(2, 70 - (vehicles * 0.45) + getRandomInt(-10, 10));
       avgSpeed = Math.round(avgSpeed * 10) / 10;
 
-      // AQI: Base 50 + (vehicles * factor) + random noise
-      let aqi = Math.max(40, 50 + (vehicles * 2.5) + getRandomInt(-20, 20));
-      aqi = Math.round(aqi);
+      // AQI: Map 0-200 vehicles to 70-190 range
+      let aqi = 70 + (vehicles * 0.6) + getRandomInt(-10, 10);
+      aqi = Math.max(70, Math.min(190, Math.round(aqi)));
 
       // 2. Decrement Timer
       if (timer > 0) {

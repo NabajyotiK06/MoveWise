@@ -8,7 +8,14 @@ const router = express.Router();
 // SIGNUP
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, adminSecretKey } = req.body;
+
+    // Check for admin secret key if role is admin
+    if (role === 'admin') {
+      if (adminSecretKey !== process.env.ADMIN_SECRET_KEY) {
+        return res.status(403).json({ message: "Invalid admin secret key" });
+      }
+    }
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
