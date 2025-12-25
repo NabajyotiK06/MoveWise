@@ -8,6 +8,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import {
   CheckCircle,
   AlertTriangle,
+  AlertCircle,
   Flame,
   Shield,
   Stethoscope,
@@ -22,6 +23,8 @@ import {
   CircleParking
 } from "lucide-react";
 
+import IncidentForm from "../components/IncidentForm";
+import MapView from "../components/MapView";
 import "../styles/layout.css";
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -162,6 +165,7 @@ const AdminDashboard = () => {
   const [showServices, setShowServices] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showSignals, setShowSignals] = useState(true);
+  const [reportLocation, setReportLocation] = useState(null);
 
 
   // Dispatch Animation State
@@ -441,8 +445,21 @@ const AdminDashboard = () => {
 
         <div className="page-body">
           {/* Map */}
+          {/* Map */}
           <div className="dashboard-map-container">
-            {activeTab === "LIVE" ? (
+            {activeTab === "REPORT" ? (
+              <MapView
+                signals={signals}
+                setSignals={setSignals}
+                setSelectedSignalId={(id) => {
+                  const signal = signals.find(s => s.id === id);
+                  if (signal) setSelectedSignal(signal);
+                }}
+                setLocation={setReportLocation}
+                location={reportLocation}
+                showHeatmap={showHeatmap}
+              />
+            ) : activeTab !== "HISTORY" ? (
               <Map
                 initialViewState={{
                   latitude: 22.4969,
@@ -453,9 +470,14 @@ const AdminDashboard = () => {
                 style={{ width: "100%", height: "100%" }}
                 mapStyle="mapbox://styles/mapbox/streets-v12"
                 mapboxAccessToken={MAPBOX_TOKEN}
-                onClick={() => {
-                  setSelectedIncident(null);
-                  setSelectedSignal(null);
+                onClick={(e) => {
+                  if (activeTab === "REPORT") {
+                    const { lng, lat } = e.lngLat;
+                    setReportLocation({ lat, lng });
+                  } else {
+                    setSelectedIncident(null);
+                    setSelectedSignal(null);
+                  }
                 }}
               >
                 <NavigationControl position="bottom-right" />
@@ -569,6 +591,16 @@ const AdminDashboard = () => {
                 ))}
 
                 {/* Incident Markers */}
+                {/* Reporting Marker */}
+                {activeTab === "REPORT" && reportLocation && (
+                  <Marker
+                    latitude={reportLocation.lat}
+                    longitude={reportLocation.lng}
+                    anchor="bottom"
+                  >
+                    <MapPin size={32} color="#ef4444" fill="white" />
+                  </Marker>
+                )}
 
                 {/* Active Dispatches Animation */}
                 {activeDispatches.map(dispatch => (
@@ -652,6 +684,15 @@ const AdminDashboard = () => {
                 >
                   <List size={16} style={{ marginRight: "6px" }} />
                   History
+                </button>
+
+                <button
+                  onClick={() => setActiveTab("REPORT")}
+                  className={`btn ${activeTab === "REPORT" ? "btn-primary" : ""}`}
+                  style={{ flex: "1 0 auto", border: activeTab !== "REPORT" ? "1px solid #e5e7eb" : "none", background: activeTab !== "REPORT" ? "white" : "", padding: "8px 12px" }}
+                >
+                  <AlertCircle size={16} style={{ marginRight: "6px" }} />
+                  Report
                 </button>
               </div>
 
@@ -859,6 +900,13 @@ const AdminDashboard = () => {
                         </button>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* REPORTING FORM */}
+                {activeTab === "REPORT" && (
+                  <div className="fade-in">
+                    <IncidentForm location={reportLocation} setLocation={setReportLocation} />
                   </div>
                 )}
 

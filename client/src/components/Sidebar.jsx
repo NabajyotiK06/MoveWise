@@ -29,13 +29,15 @@ const Sidebar = ({ role }) => {
           <span>Route Planner</span>
         </Link>
 
-        <Link
-          to="/report-incident"
-          className={`nav-item ${isActive("/report-incident") ? "active" : ""}`}
-        >
-          <AlertCircle size={20} />
-          <span>Report Incident</span>
-        </Link>
+        {role !== "admin" && (
+          <Link
+            to="/report-incident"
+            className={`nav-item ${isActive("/report-incident") ? "active" : ""}`}
+          >
+            <AlertCircle size={20} />
+            <span>Report Incident</span>
+          </Link>
+        )}
 
         <Link
           to="/bulletin"
